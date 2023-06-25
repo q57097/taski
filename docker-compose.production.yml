@@ -12,13 +12,20 @@ services:
     env_file: .env
     volumes:
       - pg_data_production:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     image: leshukov/taski_backend
     env_file: .env
     volumes:
       - static_volume:/backend_static
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   frontend:
     image: leshukov/taski_frontend  # Качаем с Docker Hub
@@ -33,3 +40,5 @@ services:
       - static_volume:/staticfiles/
     ports:
       - 8000:80
+    depends_on:
+      - backend

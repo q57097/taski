@@ -11,11 +11,20 @@ services:
     env_file: .env
     volumes:
       - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build: ./backend/
     env_file: .env
     volumes:
       - static:/backend_static
+    depends_on:
+      db:
+        condition: service_healthy
 
   frontend:
     env_file: .env
@@ -31,3 +40,5 @@ services:
       - static:/staticfiles
     ports:
       - 8000:80
+    depends_on:
+      - backend
